@@ -1,4 +1,4 @@
-# {{PROJECT_NAME}} — Development README
+# Smart Advisors — Development README
 
 Working draft for maintainers & contributors while the project is under active development. Coordinate in ACM Discord/Slack (project channel or #projects).
 
