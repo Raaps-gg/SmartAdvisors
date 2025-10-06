@@ -8,8 +8,8 @@ Directors / Contacts: Tobi (Director) and Prajit Viswanadha — DM on Discord
 
 ## Status & Links
 - Phase: In Development
-- Project board: {{PROJECT_BOARD_URL}}
-- Communication: Discord #{{project-channel}} (or team preference for Slack, etc.)
+- Project board: Not yet created
+- Communication: Discord #smart-advisors
 - Open issues: use repo Issues; prefer labels `good first issue` and `help wanted` thoughtfully
 
 ---
@@ -26,7 +26,7 @@ Directors / Contacts: Tobi (Director) and Prajit Viswanadha — DM on Discord
 - Keep secrets out of git. If you add a new variable, document it in `.env.example`.
 
 ### Bootstrap
-- Clone: `git clone https://github.com/{{GITHUB_OWNER}}/{{REPO}}.git` then `cd {{REPO}}`
+- Clone: `git clone https://github.com/kanishkarmanoj/SmartAdvisors.git` then `cd SmartAdvisors`
 - Node: if `package.json` exists → `npm ci` (fallback `npm install`)
 - Python: if `requirements.txt` exists → create venv `python -m venv .venv`, activate, then `pip install -r requirements.txt`
 - Go: if `go.mod` exists → `go mod download`
@@ -34,7 +34,7 @@ Directors / Contacts: Tobi (Director) and Prajit Viswanadha — DM on Discord
 
 ### Run
 - Node: `npm run dev` (dev server) or `npm start` (if app defines it)
-- Python (FastAPI example): `uvicorn app:app --reload`
+- Python (Flask example): `flask --app server run --debug`
 - Go: `go run ./...`
 - Rust: `cargo run`
 
@@ -110,5 +110,5 @@ Create `docs/DECISIONS.md` and record major choices with date and rationale. Exa
 ---
 
 ## Maintainers & Support
-- Maintainers: {{PRIMARY_OWNER}} ([@{{GITHUB_HANDLE}}](https://github.com/{{GITHUB_HANDLE}})), {{CO_MAINTAINER}}
+- Maintainers: Kanishkar Manoj ([@kanishkarmanoj](https://github.com/kanishkarmanoj))
 - Directors / Contacts: Tobi and Prajit Viswanadha — DM on Discord
