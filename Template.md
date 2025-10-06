@@ -1,8 +1,7 @@
-# {{PROJECT_NAME}}
+# Smart Advisor Blueprint
 
-
-> {{ONE_LINE_PITCH}}
-> _Maintained by **UTA ACM** — {{TEAM_OR_OFFICER_NAME}}_
+> An intelligent course planner that helps Civil Engineering students find the perfect courses and professors based on their unique learning preferences.
+> _Maintained by **Kanishkar Manoj**_
 
 
 ![screenshot placeholder](./docs/screenshot.png)
@@ -26,52 +25,58 @@
 
 
 ## Overview
-A short paragraph about **what** this is, **who** it’s for, and the **outcome**. Link to a demo if available.
+Smart Advisor Blueprint is a web application designed to simplify the course selection process for Civil Engineering students at our university, who currently lack an official course flowchart. By analyzing user preferences and academic history, it provides personalized recommendations for courses and professors. The outcome is a perfectly tailored semester schedule that aligns with the student's learning style and academic goals, presented in an intuitive, easy-to-use interface.
 
 
 ## Features
-- Bullet the capabilities (3–7 items)
-- …
+- **Automated Transcript Analysis:** Simply upload your unofficial transcript to automatically populate your academic history and completed courses.
+- **In-Depth Preference Profile:** Fine-tune your recommendations by specifying your ideal class and professor style, including:
+    - **Grading Style:** (e.g., test-heavy, project-based, homework-focused)
+    - **Attendance Policy:** (e.g., mandatory, optional, lecture recordings available)
+    - **Teaching Style:** (e.g., theoretical, hands-on, group project oriented)
+    - **Pace & Difficulty:** (e.g., fast-paced, heavy workload, light reading)
+    - **Professor Attributes:** (e.g., gives good feedback, tough grader, accessible outside class)
+- **Smart Course & Professor Matching:** Receive a tailored list of courses and professors that fit your unique academic needs and learning style.
+- **Interactive Schedule Builder:** Browse your personalized recommendations, save your favorites, and build your ideal semester schedule in one place.
 
 
 ## Tech Stack
-- **Frontend:** React / Next.js / Vue / Svelte / none
-- **Backend:** Node/Express / FastAPI / Flask / Go / Rust / none
-- **DB:** Postgres / MongoDB / SQLite / none
-- **Infra:** Docker / GitHub Actions / Fly.io / Render / Vercel / Netlify
-
-
-> Remove lines that don’t apply.
+- **Frontend:** React
+- **Backend:** Flask
+- **DB:** Postgres
+- **Infra:** Vercel, Render, GitHub Actions
 
 
 ## Getting Started
 
 
 ### Prerequisites
-- Git, make, and a recent Node **or** Python **or** Go/Rust toolchain (pick yours)
-- (Optional) Docker Desktop if you want containerized dev
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/en/) (v18.x or newer)
+- [Python](https://www.python.org/) (v3.10.x or newer)
+- (Optional) [Docker Desktop](https://www.docker.com/products/docker-desktop/) if you want containerized development.
 
 
 ### Quickstart
 ```bash
-# 1) Clone and enter
-git clone https://github.com/{{GITHUB_OWNER}}/{{REPO}}.git
-cd {{REPO}}
+# 1. Clone the repository
+git clone [https://github.com/kanishkarmanoj/SmartAdvisors.git](https://github.com/kanishkarmanoj/SmartAdvisors.git)
+cd SmartAdvisors
 
+# 2. Install Backend Dependencies (Python)
+# Create a virtual environment and activate it
+python -m venv .venv
+source .venv/bin/activate
+# Install required packages
+pip install -r requirements.txt # Make sure you have a requirements.txt file
 
-# 2) Choose your stack bootstrap (remove others):
-# Node
-if [ -f package.json ]; then npm ci || npm install; fi
-# Python
-if [ -f requirements.txt ]; then python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt; fi
-# Rust
-if [ -f Cargo.toml ]; then cargo fetch; fi
-# Go
-if [ -f go.mod ]; then go mod download; fi
+# 3. Install Frontend Dependencies (Node.js)
+# This assumes your package.json is in the root or a /client folder
+npm install
 
+# 4. Run the Development Servers
+# In your first terminal, run the Backend (Flask)
+flask --app server run --debug # Change 'server' to the name of your main python file
 
-# 3) Run
-# Node: npm run dev
-# Python: uvicorn app:app --reload
-# Go: go run ./...
-# Rust: cargo run
+# In a second terminal, run the Frontend (React)
+npm run dev
