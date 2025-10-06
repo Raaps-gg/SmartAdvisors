@@ -47,7 +47,7 @@
 - **Akilan:** Frontend
 - **Shreyak:** Frontend
 - **Nick:** Backend & Database
-- **Sharn:** Data Engineer
+- **Shawn:** Data Engineer
 - **Rick:** UI/UX Design
 
 ## Risk Assessment
