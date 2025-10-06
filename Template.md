@@ -1,7 +1,7 @@
 # Smart Advisor Blueprint
 
 > An intelligent course planner that helps Civil Engineering students find the perfect courses and professors based on their unique learning preferences.
-> _Maintained by **Kanishkar Manoj**_
+> _Maintained by **UTA ACM** - **Kanishkar Manoj**_
 
 
 ![screenshot placeholder](./docs/screenshot.png)
