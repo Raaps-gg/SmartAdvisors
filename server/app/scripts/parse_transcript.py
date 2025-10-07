@@ -5,7 +5,7 @@ from typing import List
 
 def extract_all_courses(pdf_path: str) -> List[str]:
     """
-    Parses a complete university transcript PDF to find all course codes,
+    Parses a UTA Unofficial Civil Engineering Undergrad transcript PDF to find all course codes,
     handling all known formats including different semesters for transfers.
     """
     
