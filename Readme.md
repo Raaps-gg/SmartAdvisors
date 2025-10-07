@@ -74,7 +74,7 @@ Directors / Contacts: Tobi (Director) and Prajit Viswanadha — DM on Discord
 This project is a monorepo containing both the frontend and backend codebases.
 
 ```bash
-/smart-advisors/
+/SmartAdvisors/
 │
 ├── client/                # 🖥️ React Frontend: All user interface code.
 │   ├── public/            # Holds the main index.html and static assets.
