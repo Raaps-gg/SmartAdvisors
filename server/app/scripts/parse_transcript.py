@@ -6,17 +6,18 @@ from typing import List
 def extract_all_courses(pdf_path: str) -> List[str]:
     """
     Parses a complete university transcript PDF to find all course codes,
-    handling graded, in-progress, test credit, and transfer credit formats.
+    handling all known formats including different semesters for transfers.
     """
     
-    # Pattern 1: Finds courses at the start of a line (for regular semesters).
-    semester_course_pattern = re.compile(r'^([A-Z]{2,4}(?:-[A-Z]{2})?)\s(\d{4})')
+    # Pattern 1: Finds regular semester courses (graded and in-progress).
+    semester_course_pattern = re.compile(r'^([A-Z]{2,4}(?:-[A-Z]{2})?)\s(\d{4}).*?\d+\.\d{3}\s+\d+\.\d{3}')
     
-    # Pattern 2: For "Test Credits" where the course is on the same line as "as".
-    test_credit_pattern = re.compile(r'Transferred to Term .*? as\s+([A-Z]{3,4}\s\d{4})')
-
-    # Pattern 3: For "Transfer Credits" where the course is on the NEXT line after "as".
-    transfer_credit_pattern = re.compile(r'Transferred to Term \d{4} \w+ as\s*\n\s*([A-Z]{3,4}\s\d{4})')
+    # Pattern 2: Finds ALL transfer/test credits.
+    # It now specifically looks for the semester name (Summer, Spring, Fall) and is case-insensitive.
+    transfer_test_pattern = re.compile(
+        r'Transferred to Term \d{4} (?:Summer|Spring|Fall) as\s*\n\s*([A-Z]{3,4}\s\d{4})',
+        re.IGNORECASE
+    )
 
     found_courses_set = set()
     
@@ -30,15 +31,12 @@ def extract_all_courses(pdf_path: str) -> List[str]:
                 if not text:
                     continue
                 
-                # --- Search for all three patterns on each page ---
-                test_credit_matches = test_credit_pattern.findall(text)
-                for course_code in test_credit_matches:
-                    found_courses_set.add(course_code)
-
-                transfer_credit_matches = transfer_credit_pattern.findall(text)
-                for course_code in transfer_credit_matches:
+                # --- Search for all Transfer and Test Credit courses ---
+                transfer_matches = transfer_test_pattern.findall(text)
+                for course_code in transfer_matches:
                     found_courses_set.add(course_code)
                 
+                # --- Search for regular and in-progress courses line by line ---
                 lines = text.split('\n')
                 for line in lines:
                     match = semester_course_pattern.match(line.strip())
@@ -48,7 +46,6 @@ def extract_all_courses(pdf_path: str) -> List[str]:
                         
     except FileNotFoundError:
         print(f"Error: The file '{pdf_path}' was not found.")
-        print("Please make sure the path on line 59 is correct.")
         return []
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -59,11 +56,10 @@ def extract_all_courses(pdf_path: str) -> List[str]:
 
 # --- Main execution block ---
 if __name__ == "__main__":
-    
-    # ⬇️ IMPORTANT: THIS IS THE HARDCODED FILE PATH ⬇️
-    # You must replace this placeholder with the full path to your PDF file.
-    transcript_pdf_path = "/path/to/your/transcript.pdf"
-    
+    if len(sys.argv) > 1:
+        transcript_pdf_path = sys.argv[1]
+    else:
+        transcript_pdf_path = ''
     
     extracted_courses = extract_all_courses(transcript_pdf_path)
     
