@@ -1,5 +1,9 @@
 # Smart Advisors — Development README
 
+## 📁 Project Structure
+
+This project is a monorepo containing both the frontend and backend codebases.
+
 ```bash
 /SmartAdvisors/
 │
@@ -17,7 +21,6 @@
 │   │   └── __init__.py    # Initializes and configures the Flask app.
 │   ├── run.py             # The script used to start the Flask server.
 │   └── requirements.txt   # A list of all required Python packages.
-```
 
 ---
 
