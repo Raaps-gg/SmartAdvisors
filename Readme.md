@@ -69,7 +69,6 @@ Directors / Contacts: Tobi (Director) and Prajit Viswanadha — DM on Discord
 
 ---
 
-## Project Structure (suggested)
 ## 📁 Project Structure
 
 This project is a monorepo containing both the frontend and backend codebases.
