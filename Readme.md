@@ -21,6 +21,7 @@ This project is a monorepo containing both the frontend and backend codebases.
 │   │   └── __init__.py    # Initializes and configures the Flask app.
 │   ├── run.py             # The script used to start the Flask server.
 │   └── requirements.txt   # A list of all required Python packages.
+```
 
 ---
 
@@ -86,29 +87,6 @@ This project is a monorepo containing both the frontend and backend codebases.
 - For deployments, store secrets in platform settings (not in code)
 
 ---
-
-## 📁 Project Structure
-
-This project is a monorepo containing both the frontend and backend codebases.
-
-```bash
-/SmartAdvisors/
-│
-├── client/                # 🖥️ React Frontend: All user interface code.
-│   ├── public/            # Holds the main index.html and static assets.
-│   └── src/               # The heart of the React application's source code.
-│       ├── components/    # Small, reusable UI parts (e.g., Button, Card).
-│       └── pages/         # Main application screens (e.g., HomePage, LoginPage).
-│
-├── server/                # ⚙️ Python/Flask Backend: All server-side logic.
-│   ├── app/               # The main Flask application package.
-│   │   ├── api/           # API routes and endpoints (e.g., /api/recommendations).
-│   │   ├── scripts/       # Standalone scripts (PDF parser, web scraper).
-│   │   ├── models.py      # Database table definitions (SQLAlchemy models).
-│   │   └── __init__.py    # Initializes and configures the Flask app.
-│   ├── run.py             # The script used to start the Flask server.
-│   └── requirements.txt   # A list of all required Python packages.
-```
 
 ## Decision Log (keep brief)
 Create `docs/DECISIONS.md` and record major choices with date and rationale. Example entries:
