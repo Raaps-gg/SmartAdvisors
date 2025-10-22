@@ -35,13 +35,9 @@ def find_data(html_content):
     desc_of_courses = soup.find_all(class_="courseblockdesc")[:len(list_of_titles)]
     for i in desc_of_courses:
         list_of_desc.append(i.text)
-        delimited_courses_list = i.text.lower().split(".")
-        for j in delimited_courses_list:
-            if "prerequisite" in j:
-                j = j.split(":").pop()
-                
-                preqs = [ "CE " + i for i in re.findall(r'\d+',j) if int(i)>1000]
+        preqs = [ f"{department} " + j for j in re.findall(r'\d+',i.text) if int(j)>1000]
         list_of_reqs.append(preqs)
+
     return list_of_titles, list_of_reqs, list_of_desc
 
             
@@ -74,16 +70,16 @@ def insert_courses(html_content,department):
     print(len(list_of_preqs))
     print(len(description))
 
-    # # Creates the Classes Table if not already present
-    # try:
-    #     cur.execute(f"""CREATE TABLE ClassesFor{department}(Course_Num VARCHAR(10) NOT NULL, 
-    #                                                         Course_Name VARCHAR(100) NOT NULL, 
-    #                                                         Pre_Co_Requisites VARCHAR(50),
-    #                                                         Description VARCHAR(1000),
-    #                                                         PRIMARY KEY(Course_Num))""")
-    # except Exception as e:
-    #     print(str(e))
-    #     exit(0)
+    # Creates the Classes Table if not already present
+    try:
+        cur.execute(f"""CREATE TABLE ClassesFor{department}(Course_Num VARCHAR(10) NOT NULL, 
+                                                            Course_Name VARCHAR(100) NOT NULL, 
+                                                            Pre_Co_Requisites VARCHAR(50),
+                                                            Description VARCHAR(1000),
+                                                            PRIMARY KEY(Course_Num))""")
+    except Exception as e:
+        print(str(e))
+        exit(0)
     sql_insert = f"""
         INSERT INTO ClassesFor{department} 
         (Course_Num, Course_Name, Pre_Co_Requisites, Description)
