@@ -70,3 +70,7 @@ if __name__ == "__main__":
         print(f"\nTotal unique courses found: {len(extracted_courses)}")
     else:
         print("\nNo course codes could be extracted.")
+
+# if someone has a D, F, P, F, Q,W, R, I Z
+# also if you are a freshman, there might not be any grades attached to the courses
+# also if the user has no classes, there should be an option called i'm new to UTA and we just send them to select the professor and courses attributes
