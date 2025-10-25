@@ -2,3 +2,4 @@
 pdfplumber
 requests
 beautifulsoup4
+spacy
