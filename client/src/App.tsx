@@ -10,6 +10,7 @@ type PreferencesType = {
   assessmentType: string;
   attendanceRequired: string;
   classSize: string;
+  classesTaken: String[]
 };
 type AppState = 'welcome' | 'onboarding' | 'dashboard';
 
@@ -27,7 +28,7 @@ function App() {
           onComplete={(data) => {
             SetUserData(data);
             // Run the recomendation algorithm here?
-            setAppState('onboarding'); //temporarily changing from dashboard to onboardign
+            setAppState('dashboard'); //temporarily changing from dashboard to onboardign
           }}
         />
       )}

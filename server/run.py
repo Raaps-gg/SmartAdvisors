@@ -7,7 +7,8 @@ if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
 
 # Running the python script on a virtual enviormnet backend
-# python3 -m venv venv
+# python3 -m venv venv (not required if you already have a venv)
+# source venv/bin/activate
 # pip install flask flask-cors flask_sqlalchemy python-dotenv pdfplumber psycopg2-binary
 # python run.py
 # deactivate

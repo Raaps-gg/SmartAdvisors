@@ -7,6 +7,7 @@ type PreferencesType = {
   assessmentType: string;
   attendanceRequired: string;
   classSize: string;
+  classesTaken: String[]
 };
 
 interface OnboardingScreenProps {
@@ -21,21 +22,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     assessmentType: '',
     attendanceRequired: '',
     classSize: '',
+    classesTaken: []
   });
   const [transcript, setTranscript] = useState<File | null>(null);
   const [classes, setClasses] = useState<string | null>(null);
-
-
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-
-  const toggleDay = (day: string) => {
-    setPreferences(prev => ({
-      ...prev,
-      preferredDays: prev.preferredDays.includes(day)
-        ? prev.preferredDays.filter(d => d !== day)
-        : [...prev.preferredDays, day]
-    }));
-  };
 
 async function uploadTranscript(file: File) {
   const formData = new FormData();
@@ -53,6 +43,7 @@ async function uploadTranscript(file: File) {
 const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
   if (!file) return;
+  // Checking if the file is a pdf
   if (file.type !== "application/pdf") {
     alert("Please upload a PDF file.");
     return;
@@ -60,10 +51,15 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   setTranscript(file);
 
+  // Calling a function to get the parsed data
   const data = await uploadTranscript(file);
   if (data.output) {
     setClasses(data.output);
-    console.log("Processed classes:", classes);
+    setPreferences(prev => ({
+      ...prev,
+      classesTaken: Array.isArray(data.output) ? data.output : []
+    }));
+    console.log("Processed classes:", data.output);
   } else {
     alert(data.error || "Error processing file");
   }
@@ -80,9 +76,9 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   const canProceed = () => {
-    if (step === 1) return preferences.preferredDays.length > 0;
-    if (step === 2) return preferences.assessmentType && preferences.attendanceRequired && preferences.classSize;
-    if (step === 3) return transcript !== null;
+    if (step === 1) return true;
+    if (step === 2) return transcript !== null && preferences.classesTaken;
+    if (step === 3) return preferences.assessmentType && preferences.attendanceRequired && preferences.classSize;
     return false;
   };
 
@@ -91,7 +87,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3].map((num) => (
+            {[1,2,3].map((num) => (
               <div key={num} className="flex items-center flex-1">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
@@ -113,61 +109,107 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             ))}
           </div>
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Schedule</span>
-            <span>Preferences</span>
+            <span>Disclaimer</span>
             <span>Transcript</span>
+            <span>Preferences</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {step === 1 && (
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                  <Calendar className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Preferred Class Days</h2>
-                  <p className="text-gray-600">Select the days you want to attend classes</p>
-                </div>
-              </div>
+        {/* Step 1: Warning Page */}
+        {/* Add enough info to let the student know that we will be asking for their transcript to see what classes they have taken
+            Also important to add that this data is not stored and will be deleted after the current session*/}
+        {step === 1 && (
+          <div className="text-center p-12">
+            <h2 className="text-2xl font-bold mb-4">Important Notice</h2>
+            <p className="mb-8 text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse euismod, urna eu tincidunt consectetur, nisi erat hendrerit lectus.</p>
+          </div>
+        )}
 
-              <div className="space-y-3">
-                {days.map((day) => (
-                  <button
-                    key={day}
-                    onClick={() => toggleDay(day)}
-                    className={`w-full p-4 rounded-lg border-2 transition-all text-left font-medium ${
-                      preferences.preferredDays.includes(day)
-                        ? 'border-blue-600 bg-blue-50 text-blue-900'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>{day}</span>
-                      {preferences.preferredDays.includes(day) && (
-                        <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                      )}
-                    </div>
-                  </button>
-                ))}
+        {/* Step 2: Transcript Upload */}
+        {step === 2 && (
+          <div>
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <Upload className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Upload Transcript</h2>
+                <p className="text-gray-600">Upload your unofficial transcript for course analysis</p>
               </div>
             </div>
-          )}
 
-          {step === 2 && (
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                  <ClipboardCheck className="w-6 h-6 text-blue-600" />
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-400 transition-colors">
+              {!transcript ? (
+                <label className="cursor-pointer block">
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf"
+                    onChange={handleFileUpload}
+                  />
+                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-900 mb-2">
+                    Drop your transcript here or click to browse
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Supports PDF files only (Max 10MB)
+                  </p>
+                </label>
+              ) : (
+                <div className="flex items-center justify-center">
+                  <FileText className="w-8 h-8 text-blue-600 mr-3" />
+                  <div className="text-left">
+                    <p className="font-medium text-gray-900">{transcript.name}</p>
+                    <p className="text-sm text-gray-500">{(transcript.size / 1024).toFixed(2)} KB</p>
+                  </div>
+                  <button
+                    onClick={() => setTranscript(null)}
+                    className="ml-4 text-red-600 hover:text-red-700 font-medium text-sm"
+                  >
+                    Remove
+                  </button>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Learning Preferences</h2>
-                  <p className="text-gray-600">Tell us about your ideal learning environment</p>
-                </div>
+              )}
+            </div>
+            <div className="mt-6 bg-blue-50 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">Why we need your transcript:</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Analyze courses you've completed</li>
+                <li>• Identify prerequisite requirements</li>
+                <li>• Match you with appropriate professors</li>
+                <li>• Suggest optimal course sequences</li>
+              </ul>
+            </div>
+          <div className="mt-4 bg-blue-100 rounded-lg p-4 border-l-4 border-blue-500">
+      <h3 className="font-semibold text-blue-800 mb-2">How to get your unofficial transcript</h3>
+      <p className="text-sm text-blue-700 mb-2">
+        UTA link for a guide
+      </p>
+      <a 
+        href="https://uta.service-now.com/selfservice?id=utassp01_kb_article&sys_id=fd187c6edbd48cd8d48b5e65ce96194a&catid=&pageid=utassp02_kb_public_knowledge_base" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="text-blue-700 font-medium underline text-sm"
+      >
+        Transcript instructions
+      </a>
+    </div>
+  </div>
+        )}
+
+        {/* Step 3: Learning Preferences */}
+        {step === 3 && (
+          <div>
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <ClipboardCheck className="w-6 h-6 text-blue-600" />
               </div>
-
-              <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Learning Preferences</h2>
+                <p className="text-gray-600">Tell us about your ideal learning environment</p>
+              </div>
+            </div>
+           <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 mb-3">
                     Assessment Preference
@@ -235,88 +277,28 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
           )}
 
-          {step === 3 && (
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                  <Upload className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Upload Transcript</h2>
-                  <p className="text-gray-600">Upload your unofficial transcript for course analysis</p>
-                </div>
-              </div>
-
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-400 transition-colors">
-                {!transcript ? (
-                  <label className="cursor-pointer block">
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      onChange={handleFileUpload}
-                    />
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-900 mb-2">
-                      Drop your transcript here or click to browse
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Supports PDF, Word, or Image files (Max 10MB)
-                    </p>
-                  </label>
-                ) : (
-                  <div className="flex items-center justify-center">
-                    <FileText className="w-8 h-8 text-blue-600 mr-3" />
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">{transcript.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {(transcript.size / 1024).toFixed(2)} KB
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setTranscript(null)}
-                      className="ml-4 text-red-600 hover:text-red-700 font-medium text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 bg-blue-50 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-2">Why we need your transcript:</h3>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Analyze courses you've completed</li>
-                  <li>• Identify prerequisite requirements</li>
-                  <li>• Match you with appropriate professors</li>
-                  <li>• Suggest optimal course sequences</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            {step > 1 && (
-              <button
-                onClick={() => setStep(step - 1)}
-                className="px-6 py-2.5 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Back
-              </button>
-            )}
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-8 pt-6 border-t">
+          {step > 1 && (
             <button
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className={`ml-auto px-6 py-2.5 rounded-lg font-semibold transition-all flex items-center ${
-                canProceed()
-                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
+              onClick={() => setStep(step - 1)}
+              className="px-6 py-2.5 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
             >
-              {step === 3 ? 'Complete Setup' : 'Next'}
-              <ChevronRight className="w-4 h-4 ml-2" />
+              Back
             </button>
-          </div>
+          )}
+          <button
+            onClick={handleNext}
+            disabled={!canProceed()}
+            className={`ml-auto px-6 py-2.5 rounded-lg font-semibold transition-all flex items-center ${
+              canProceed()
+                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {step === 3 ? 'Complete Setup' : 'Next'}
+            <ChevronRight className="w-4 h-4 ml-2" />
+          </button>
         </div>
       </div>
     </div>
