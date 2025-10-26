@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask_cors import CORS
 from dotenv import load_dotenv
 from .config import Config
 from .extensions import db, migrate
@@ -8,6 +9,7 @@ def create_app():
     # Load environment variables from .env
     load_dotenv()
     app = Flask(__name__, instance_relative_config=False)
+    CORS(app)
     app.config.from_object(Config)
 
     # Accept DATABASE_URL or SQLALCHEMY_DATABASE_URI
@@ -38,5 +40,8 @@ def create_app():
 
     # register models
     from . import models  # noqa
+
+    from . import routes  # noqa
+    app.register_blueprint(routes.api_bp)
 
     return app

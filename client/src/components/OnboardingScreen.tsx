@@ -1,19 +1,30 @@
 import { useState } from 'react';
 import { Upload, Calendar, ClipboardCheck, Users, ChevronRight, FileText, CheckCircle2 } from 'lucide-react';
 
+//defining a type alias for preferences
+type PreferencesType = {
+  preferredDays: string[];
+  assessmentType: string;
+  attendanceRequired: string;
+  classSize: string;
+};
+
 interface OnboardingScreenProps {
-  onComplete: () => void;
+  //Passing the data we gathered as a prop (Do we need to send in the transcript file or just the data)
+  onComplete: (data: { preferences: PreferencesType }) => void; 
 }
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
   const [step, setStep] = useState(1);
-  const [preferences, setPreferences] = useState({
+  const [preferences, setPreferences] = useState<PreferencesType>({
     preferredDays: [] as string[],
     assessmentType: '',
     attendanceRequired: '',
     classSize: '',
   });
   const [transcript, setTranscript] = useState<File | null>(null);
+  const [classes, setClasses] = useState<string | null>(null);
+
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
@@ -26,17 +37,45 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     }));
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setTranscript(e.target.files[0]);
-    }
-  };
+async function uploadTranscript(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("http://127.0.0.1:5000/api/process-file", {
+    method: "POST",
+    body: formData,
+  });
+
+  return await res.json();
+}
+
+
+const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (file.type !== "application/pdf") {
+    alert("Please upload a PDF file.");
+    return;
+  }
+
+  setTranscript(file);
+
+  const data = await uploadTranscript(file);
+  if (data.output) {
+    setClasses(data.output);
+    console.log("Processed classes:", classes);
+  } else {
+    alert(data.error || "Error processing file");
+  }
+};
+
+
 
   const handleNext = () => {
     if (step < 3) {
       setStep(step + 1);
     } else {
-      onComplete();
+      onComplete({ preferences }); //Sending the data out
     }
   };
 
