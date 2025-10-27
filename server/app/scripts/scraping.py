@@ -174,7 +174,8 @@ def insert_courses(html_content, department):
         cur.execute(f"""CREATE TABLE IF NOT EXISTS {safe_table_name}(
                                          Course_Num VARCHAR(10) NOT NULL PRIMARY KEY, 
                                          Course_Name VARCHAR(100) NOT NULL, 
-                                         Pre_Co_Requisites VARCHAR(200),
+                                         Pre_Requisites VARCHAR(200),
+                                         Co_Requisites VARCHAR(200),
                                          Description VARCHAR(1000)
                                          )""")
     except Exception as e:
@@ -184,16 +185,21 @@ def insert_courses(html_content, department):
 
     sql_insert = f"""
         INSERT OR REPLACE INTO {safe_table_name} 
-        (Course_Num, Course_Name, Pre_Co_Requisites, Description)
-        VALUES (?, ?, ?, ?)
+        (Course_Num, Course_Name, Pre_Requisites,Co_Requisites, Description)
+        VALUES (?, ?, ?, ?, ?)
     """
     
     for i in range(len(list_of_titles)):
+        prereqs = ', '.join([str(item) for item in list_of_preqs[i]["prereqs"]])
+        coreqs = ', '.join([str(item) for item in list_of_preqs[i]["coreqs"]])
+
+
         data = (
-            list_of_titles[i][0],      # Course_Num
-            list_of_titles[i][1],      # Course_Name
-            str(list_of_preqs[i]),     # Pre_Co_Requisites (now a string dict)
-            str(description[i]).strip() # Description
+            list_of_titles[i][0],             # Course_Num
+            list_of_titles[i][1],             # Course_Name
+            str(prereqs), # Pre_Requisites 
+            str(coreqs),  # Co_Requisites 
+            str(description[i]).strip()       # Description
         )
         try:
             cur.execute(sql_insert, data)
