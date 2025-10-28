@@ -9,6 +9,6 @@ if __name__ == "__main__":
 # Running the python script on a virtual enviormnet backend
 # python3 -m venv venv (not required if you already have a venv)
 # source venv/bin/activate
-# pip install flask flask-cors flask_sqlalchemy python-dotenv pdfplumber psycopg2-binary
+# (not necessary if already installed) pip install flask flask-cors flask_sqlalchemy python-dotenv pdfplumber psycopg2-binary
 # python run.py
 # deactivate
