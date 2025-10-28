@@ -1,24 +1,44 @@
 import { useState } from 'react';
-import AuthScreen from './components/AuthScreen';
+// import AuthScreen from './components/AuthScreen';
+import WelcomePage from './components/WelcomePage';
 import OnboardingScreen from './components/OnboardingScreen';
 import RecommendationDashboard from './components/RecommendationDashboard';
 
-type AppState = 'auth' | 'onboarding' | 'dashboard';
+//defining a type alias for preferences
+type PreferencesType = {
+  preferredDays: string[];
+  assessmentType: string;
+  attendanceRequired: string;
+  classSize: string;
+  classesTaken: String[]
+};
+type AppState = 'welcome' | 'onboarding' | 'dashboard';
 
 function App() {
-  const [appState, setAppState] = useState<AppState>('auth');
+  const [appState, setAppState] = useState<AppState>('welcome');
+  const [userData, SetUserData] = useState<{ preferences: PreferencesType } | null>(null)
 
   return (
     <>
-      {appState === 'auth' && (
-        <AuthScreen onAuthSuccess={() => setAppState('onboarding')} />
+      {appState === 'welcome' && (
+        <WelcomePage onGetStarted={() => setAppState('onboarding')} />
       )}
       {appState === 'onboarding' && (
-        <OnboardingScreen onComplete={() => setAppState('dashboard')} />
+        <OnboardingScreen
+          onComplete={(data) => {
+            SetUserData(data);
+            // Run the recomendation algorithm here?
+            setAppState('dashboard'); //temporarily changing from dashboard to onboardign
+          }}
+        />
       )}
-      {appState === 'dashboard' && <RecommendationDashboard />}
+      {appState === 'dashboard' && userData && (
+        <RecommendationDashboard userData={userData} />
+      )}
+
     </>
   );
 }
+
 
 export default App;

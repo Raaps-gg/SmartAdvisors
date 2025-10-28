@@ -1,5 +1,13 @@
 import { Star, Users, Calendar, TrendingUp, Clock, Award, BookOpen, Filter } from 'lucide-react';
 
+//defining a type alias for preferences
+type PreferencesType = {
+  preferredDays: string[];
+  assessmentType: string;
+  attendanceRequired: string;
+  classSize: string;
+};
+
 interface Professor {
   id: string;
   name: string;
@@ -16,7 +24,12 @@ interface Professor {
   tags: string[];
 }
 
-export default function RecommendationDashboard() {
+interface RecommendationDashboardProps {
+  userData: { preferences: PreferencesType };
+}
+
+export default function RecommendationDashboard({ userData }: RecommendationDashboardProps) {
+  console.log('User Data from onboarding:', userData); //Just a test to see the data on the other side
   const mockProfessors: Professor[] = [
     {
       id: '1',
