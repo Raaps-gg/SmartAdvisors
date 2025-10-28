@@ -97,6 +97,7 @@ def find_data(html_content):
     Find the (Course_Num, Course_Name) and (Prerequisites, Corequisites)
     Returned as list_of_titles and list_of_reqs respectively
     """
+    # print(html_content)
     soup = BeautifulSoup(html_content, 'html.parser')
     titles_of_courses = soup.find_all(class_="courseblocktitle")
 
@@ -152,9 +153,106 @@ def find_data(html_content):
     
     return list_of_titles, list_of_reqs, list_of_desc
 
+def find_prereqs(prerequisites, main_course_department, safe_table_name, cur):
+    """
+    Recursively finds and inserts prerequisite courses from other departments.
+    
+    :param prerequisites: A set of prerequisite course IDs, e.g., {'MATH 1426', 'PHYS 1443'}
+    :param main_course_department: The department of the course we're checking, e.g., "CE"
+    :param safe_table_name: The name of the SQL table to insert into.
+    :param cur: The active database cursor.
+    """
+    
+    # Use the same INSERT OR REPLACE strategy as insert_courses
+    sql_insert = f"""
+        INSERT OR REPLACE INTO {safe_table_name} 
+        (Course_Num, Course_Name, Pre_Requisites, Co_Requisites, Description)
+        VALUES (?, ?, ?, ?, ?)
+    """
+    
+    if not prerequisites:
+        return  # Base case: no prerequisites
+
+    # Loop through each prerequisite course ID in the set
+    for prereq_course_id in prerequisites:
+        # prereq_course_id is a string, e.g., "MATH 1426"
+        
+        # Check if this prerequisite is in a different department
+        if main_course_department not in str(prereq_course_id):
+            try:
+                prereq_dept = prereq_course_id.split(" ")[0] # e.g., "MATH"
+
+                # --- VITAL CHECK: PREVENT INFINITE RECURSION ---
+                # Check if we have *already* inserted this course.
+                cur.execute(f"SELECT 1 FROM {safe_table_name} WHERE Course_Num = ?", (prereq_course_id,))
+                if cur.fetchone():
+                    # If it exists, we're done. Skip to the next prerequisite.
+                    continue 
+                
+                # --- We don't have it. Scrape the new department. ---
+                print(f"--- Finding prereq: {prereq_course_id} from {prereq_dept} department...")
+                html = get_html_content(prereq_dept)
+                if not html:
+                    print(f"Warning: Could not fetch {prereq_dept}. Skipping {prereq_course_id}.")
+                    continue # Skip this prerequisite
+
+                # Parse the *entire* department page
+                new_titles, new_preqs, new_descs = find_data(html)
+                
+                # Find the specific course we're looking for
+                found_course = False
+                for k in range(len(new_titles)):
+                    
+                    clean_title_from_scrape = new_titles[k][0].replace('\u00A0', ' ').strip()
+                    
+                    # If we find the matching course (e.g., "MATH 1426")
+                    if prereq_course_id == clean_title_from_scrape:
+                        found_course = True
+                        
+                        # Get its data and prereqs
+                        prereqs_for_this_prereq_set = new_preqs[k]["prereqs"]
+                        coreqs_for_this_prereq_set = new_preqs[k]["coreqs"]
+                        
+                        prereqs_str = ', '.join(prereqs_for_this_prereq_set)
+                        coreqs_str = ', '.join(coreqs_for_this_prereq_set)
+                        
+                        data_tuple_for_prereq = (
+                            new_titles[k][0],      # Course_Num
+                            new_titles[k][1],      # Course_Name
+                            prereqs_str,           # Pre_Requisites 
+                            coreqs_str,            # Co_Requisites 
+                            str(new_descs[k]).strip() # Description
+                        )
+                        
+                        # --- 1. Insert this prerequisite course (e.g., "MATH 1426") ---
+                        try:
+                            cur.execute(sql_insert, data_tuple_for_prereq)
+                        except Exception as e:
+                            print(f"Error inserting prereq {data_tuple_for_prereq[0]}: {e}")
+
+                        # --- 2. NOW, recursively find *its* prerequisites ---
+                        all_prereqs_for_prereq = prereqs_for_this_prereq_set.union(coreqs_for_this_prereq_set)
+                        if all_prereqs_for_prereq:
+                            # The 'department' for this recursive call is "MATH" (prereq_dept)
+                            find_prereqs(all_prereqs_for_prereq, prereq_dept, safe_table_name, cur)
+                        
+                        # We found our course, so break from the inner 'for k' loop
+                        break 
+                
+                if not found_course:
+                    print(f"Warning: Could not find {prereq_course_id} on {prereq_dept} page.")
+                    
+            except Exception as e:
+                print(f"Recursive scrape error on {prereq_course_id}: {e}")
+                continue # Continue to the next prereq in the 'for' loop
+
+    # This function does not need to return anything.
+    # Its only job is to find and insert.
+    return
+            
 
 def insert_courses(html_content, department):
-   
+    
     db_path = "SmartAdvisors/data/classes.db"
     
     db = sqlite3.connect(db_path)
@@ -172,12 +270,12 @@ def insert_courses(html_content, department):
     # Creates the Classes Table if not already present
     try:
         cur.execute(f"""CREATE TABLE IF NOT EXISTS {safe_table_name}(
-                                         Course_Num VARCHAR(10) NOT NULL PRIMARY KEY, 
-                                         Course_Name VARCHAR(100) NOT NULL, 
-                                         Pre_Requisites VARCHAR(200),
-                                         Co_Requisites VARCHAR(200),
-                                         Description VARCHAR(1000)
-                                         )""")
+                                        Course_Num VARCHAR(10) NOT NULL PRIMARY KEY, 
+                                        Course_Name VARCHAR(100) NOT NULL, 
+                                        Pre_Requisites VARCHAR(200),
+                                        Co_Requisites VARCHAR(200),
+                                        Description VARCHAR(1000)
+                                        )""")
     except Exception as e:
         print(f"Error creating table: {e}")
         db.close()
@@ -188,28 +286,40 @@ def insert_courses(html_content, department):
         (Course_Num, Course_Name, Pre_Requisites,Co_Requisites, Description)
         VALUES (?, ?, ?, ?, ?)
     """
-    
-    for i in range(len(list_of_titles)):
-        prereqs = ', '.join([str(item) for item in list_of_preqs[i]["prereqs"]])
-        coreqs = ', '.join([str(item) for item in list_of_preqs[i]["coreqs"]])
-
-
+    i = 0
+    while i < len(list_of_titles):
+        prereqs_set = list_of_preqs[i]["prereqs"] # Get the set
+        coreqs_set = list_of_preqs[i]["coreqs"]   # Get the set
+        
+        prereqs_str = ', '.join([str(item) for item in prereqs_set])
+        coreqs_str = ', '.join([str(item) for item in coreqs_set])
+        
+        # --- This is the Depth-First Search part ---
+        # 1. First, find and insert all prerequisites for this course
+        # We combine prereqs and coreqs to process them all
+        all_reqs_set = prereqs_set.union(coreqs_set)
+        
+        # Call the recursive function. It doesn't return anything.
+        find_prereqs(all_reqs_set, department, safe_table_name, cur)
+        
+        # 2. Now that all prerequisites are in the DB, insert the main course
         data = (
-            list_of_titles[i][0],             # Course_Num
-            list_of_titles[i][1],             # Course_Name
-            str(prereqs), # Pre_Requisites 
-            str(coreqs),  # Co_Requisites 
-            str(description[i]).strip()       # Description
+            list_of_titles[i][0],         # Course_Num
+            list_of_titles[i][1],         # Course_Name
+            str(prereqs_str),             # Pre_Requisites 
+            str(coreqs_str),              # Co_Requisites 
+            str(description[i]).strip()   # Description
         )
         try:
             cur.execute(sql_insert, data)
+            i += 1
         except Exception as e:
             print(f"Error inserting {data[0]}: {e}")
+            i += 1 # Increment to avoid an infinite loop on a failing row
 
     db.commit()
     db.close()
     print(f"Successfully processed and saved data for {department} to {db_path}")
-
 def get_html_content(department):
     department = department.lower()
     website = f"https://catalog.uta.edu/coursedescriptions/{department}"
@@ -226,7 +336,7 @@ def get_html_content(department):
         return None
 
 # --- Main execution ---
-department = "CE" # Example department
+department = "CSE" # Example department
 
 """
 Insert the into the database for any department
