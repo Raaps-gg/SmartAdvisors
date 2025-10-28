@@ -1,0 +1,5 @@
+# ======== Data Processing & Scraping ========
+pdfplumber
+requests
+beautifulsoup4
+spacy
